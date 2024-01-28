@@ -1,0 +1,29 @@
+NGINX SETUP IN UBUNTU:
+----------------------
+
+1: sudo apt update
+2: sudo apt install nginx
+3: sudo ufw enable 				// if ufw isn't activitated
+4: sudo ufw allow 'Nginx HTTP'
+5: sudo ufw allow 'OPENSSH' 			// to continueing ssh
+6: sudo ufw status
+7: systemctl status nginx
+
+
+
+BASIC MANAGEMENT COMMANDS:
+
+	sudo systemctl stop nginx
+	
+	sudo systemctl start nginx
+	
+	sudo systemctl restart nginx
+	
+	sudo systemctl reload nginx
+	
+	sudo systemctl disable nginx
+	
+	sudo systemctl enable nginx
+	
+
+more details: https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04

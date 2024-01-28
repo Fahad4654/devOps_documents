@@ -1,0 +1,15 @@
+pre-req: 
+	build essential 	- sudo apt-get install build-essential
+   	bcc			- sudo apt-get install bcc
+
+1. git clone https://github.com/HRex39/rtl8852be.git
+
+2. cd rtl8852be/
+
+3. make -j8
+
+4. sudo make install
+
+5. sudo modprobe 8852be
+
+6. sudo reboot

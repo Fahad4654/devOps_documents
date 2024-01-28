@@ -1,0 +1,47 @@
+Ansible installation:
+
+1. sudo apt update 
+2. sudo apt install software-properties-common
+3. sudo apt-add-repository --yes --update ppa:ansible/ansible
+4. sudo apt install ansible
+5. ansible –version
+
+ref:: https://adamtheautomator.com/install-ansible/#Installing_Ansible_on_Ubuntu
+
+To ansible on remote machine
+steps:
+
+1. configure ansible host file:
+	sudo nano /etc/ansible/hosts
+2. enter the ip address in the file of the remote host
+3. To confirm ping through ansible:
+	ansible all -m ping -u <username> --ask-pass		//will ask password for the 										//vagrant user
+	ssh pass: <password>
+4. will show a confirmation.
+5.
+
+
+
+
+
+
+
+
+ssh-copy-id <user>@<ip.address>
+
+
+ using /usr/share/maven/bin/mvn to provide /usr/bin/mvn (mvn) in auto mode
+
+
+
+SDK installed successfully, settings file: /home/ihadmin/.m2/settings.xml
+
+
+groupId (default: 'org.openmrs.module')
+
+Please specify initial version (default: '1.0.0-SNAPSHOT'): 
+
+What is the lowest version of the Reference Application (-Drefapp) you want to support? (default: '2.4'): 
+
+
+ ansible all -i hosts -m copy -a "src=/home/fahad/ansible-practice/rr.txt dest=/home/ihadmin/

@@ -1,0 +1,41 @@
+mysql connection remote 8.0
+
+1st: edit: 
+	sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+		
+		
+		# Instead of skip-networking the default is now to listen only on
+		# localhost which is more compatible and is not less secure.
+			bind-address            = 127.0.0.1 // or 0.0.0.0
+
+2nd: 	sudo systemctl restart mysql
+
+3ed: 	mysql -u root -p
+
+
+step1: 	CREATE USER 'openmrs_user'@'192.168.19.193' IDENTIFIED BY 'P@ssw0rd';
+	or 
+	CREATE USER 'openmrs_user'@'192.168.19.193' IDENTIFIED WITH mysql_native_password BY 'mPower@786'; 
+	*/ <This command will create a user that authenticates with MySQL’s default authentication plugin, caching_sha2_password. However, 			
+	there is a known issue with some versions of PHP that can cause problems with this plugin.
+
+	If you plan to use this database with a PHP application — phpMyAdmin, for example — you may want to create a remote user that will 	
+	authenticate with the older, though still secure, mysql_native_password plugin instead:>  /*
+
+step2: 	if this is used (CREATE USER 'openmrs_user'@'192.168.19.193' IDENTIFIED BY 'mPower@786';)
+	ALTER USER 'openmrs_user'@'192.168.19.193' IDENTIFIED WITH mysql_native_password BY 'mPower@786';
+
+
+step3: 	GRANT CREATE, ALTER, DROP, INSERT, UPDATE, DELETE, SELECT, REFERENCES on <DBNAME>.* TO 'openmrs_user'@'192.168.19.193' WITH GRANT OPTION;
+
+	for all DB:
+	GRANT CREATE, ALTER, DROP, INSERT, UPDATE, DELETE, SELECT, REFERENCES, RELOAD on *.* TO 'openmrs_user'@'192.168.19.193' WITH GRANT OPTION;
+
+step4: 	FLUSH PRIVILEGES;
+
+step5: 	sudo ufw allow from <remote_ip_address> to any port 3306 	//if firewall is enabled;
+step6:	sudo ufw allow 3306/tcp;
+
+
+cd /opt/tomcat/bin/
+sudo ./startup.sh

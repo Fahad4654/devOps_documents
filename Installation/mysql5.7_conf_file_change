@@ -1,0 +1,10 @@
+mysql 5.7 conf change:
+
+sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+
+insert line at last:		
+	sql-mode=""
+	
+	
+	
+https://computingforgeeks.com/how-to-install-mysql-on-ubuntu-focal/

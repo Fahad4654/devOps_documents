@@ -1,0 +1,26 @@
+_________________
+JAVA PROJECT RUN:
+_________________
+
+1.  setup jdk 8 and maven:
+	install jdk8:
+		sudo apt-get install openjdk-8-jdk
+	install maven:
+		sudo apt-get install maven
+
+2. copy source code from local machine/git
+
+3. Setup database according to "application.properties" or "application.yml"
+
+4. build the app using:
+
+	For maven:
+		mvn clean package
+		
+	For Gradle:
+		./gradlew clean build
+		
+5. run the app using from the target folder directory: 
+	java -jar <appname>.jar
+	
+6. access at "localhost:9003" //check firewall before browsing

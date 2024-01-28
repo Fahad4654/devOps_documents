@@ -1,0 +1,87 @@
+Streaming Replication with PostgreSQL 12
+
+
+Prerequisites:
+1. Two separate machines Ubuntu 20.04 machines; one referred to as the primary and the other referred to as the replica.
+2. Same version of psql in both machine
+3. Your firewalls configured to allow HTTP/HTTPS and traffic on port 5432
+
+
+
+Steps:
+
+ON BOTH SERVER;
+
+1. sudo apt update
+
+2. sudo apt install pgpool2 postgresql-12-pgpool2 postgresql-contrib
+
+3. sudo nano /etc/postgresql/12/main/postgresql.conf
+	edit this in the conf file:
+	
+	listen_addresses = '*'
+	wal_level = replica
+	max_wal_senders = 10
+4. sudo systemctl restart postgresql
+
+ON MAIN SERVER:
+
+5. sudo -u postgres psql
+
+6. CREATE ROLE test WITH REPLICATION PASSWORD 'testpassword' LOGIN;
+
+7. \q
+
+8. sudo nano /etc/postgresql/12/main/pg_hba.conf
+	add this at the ent of the conf file:
+	
+	host    replication     test    your-replica-IP/32   md5
+
+9. sudo systemctl restart postgresql@12-main
+
+ON REPLICA SERVER:
+
+10. sudo -u postgres psql
+
+11. SHOW data_directory; (copy the directory)
+	output: /var/lib/postgresql/12/main
+	
+12. \q
+
+13. sudo -u postgres rm -r /var/lib/postgresql/12/main
+
+14. sudo -u postgres mkdir /var/lib/postgresql/12/main
+
+15. sudo -u postgres chmod 700 /var/lib/postgresql/12/main
+
+16. sudo -u postgres pg_basebackup -h primary-ip-addr -p 5432 -U test -D /var/lib/postgresql/12/main/ -Fp -Xs -R
+
+17. sudo systemctl restart postgresql@12-main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sudo pgpool -n &
+sudo pgpool -f /usr/local/etc/pgpool.conf -F /usr/local/etc/pcp.conf -m fast stop

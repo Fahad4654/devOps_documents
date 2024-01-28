@@ -1,0 +1,120 @@
+_______________
+POSTGRES SETUP:
+_______________
+
+1. curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc|sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+
+2. echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" |sudo tee  /etc/apt/sources.list.d/pgdg.list
+
+3. sudo nano /etc/apt/sources.list.d/pgdg.list 
+[insert line]
+	deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+[instead of]
+	deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+
+4. sudo apt update
+
+5. sudo apt -y install postgresql-12 postgresql-client-12
+
+6. systemctl status postgresql.service
+
+7. systemctl is-enabled postgresql
+
+8. wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc |   sudo apt-key add -
+
+9. sudo apt-get update
+
+10. sudo apt-get -y install qgis
+
+11. sudo apt-get install postgresql-12-postgis-3-scripts
+
+12. sudo service postgresql restart
+
+
+
+____________________________________________________________________
+CREATING DATABASE WITH EXTENSIONS AND CREATING USER GRANTING THE DB:
+____________________________________________________________________
+
+1. sudo su postgres
+
+2. postgres user and password create:  
+	psql -d template1 -c "CREATE USER <username> WITH PASSWORD 'DB@mPower@786';"
+
+3. exit;
+
+detail: <username> for postgres user and
+        DB@mPower@786 postgres password 
+  
+4. sudo su postgres
+
+5. psql
+
+6. create database <DBname>;
+7. \q
+
+8. psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE <DBname> to <username>;"
+
+9. psql -c "CREATE EXTENSION IF NOT EXISTS postgis;" -d <DBname>
+10. psql -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" -d <DBname>
+
+
+
+
+
+
+______________________
+FOR REMOTE CONNECTOIN:
+______________________
+
+1. sudo nano /etc/postgresql/12/main/postgresql.conf
+	[replace]	local_addresses = 'localhost'
+	[to]	 	local_addresses = '*'
+	
+2. sudo nano /etc/postgresql/12/main/pg_hba.conf
+	[replace]	
+			# "local" is for Unix domain socket connections only
+			local   all             all                                     peer
+			# IPv4 local connections:
+			host    all             all             127.0.0.0/32            md5
+	[to]	 	
+			# "local" is for Unix domain socket connections only (for user login)
+			local   all             all                                     md5
+			# IPv4 local connections: (for remote connection)
+			host    all             all             0.0.0.0/0		md5
+
+
+
+
+______________________________
+UNINSTALL POSTGRES COMPLETELY:
+______________________________
+
+1. sudo apt-get --purge remove postgresql postgresql-*
+
+2. sudo apt-get autoremove
+
+3. sudo apt-get autoclean
+
+
+
+
+192.168.19.143,localhost
+
+
+
+
+if permission issues: sudo chmod og+X /home /home/user
+________________________________________________________________________________________
+for more: https://computingforgeeks.com/install-postgresql-12-on-ubuntu/#google_vignette
+________________________________________________________________________________________
+
+FOLLOW TO INSTALL PSQL10:
+________________________________________________________________________________________
+https://www.howtodojo.com/install-postgresql-10-ubuntu-20-04
+________________________________________________________________________________________
+FOLLOW TO INSTALL POSTGIS:
+________________________________________________________________________________________
+https://trac.osgeo.org/postgis/wiki/UsersWikiPostGIS3UbuntuPGSQLApt
+________________________________________________________________________________________
+

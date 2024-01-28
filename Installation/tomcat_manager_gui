@@ -1,0 +1,14 @@
+<role rolename="manager-gui"/>
+<role rolename="admin-gui"/>
+<user username="mpower" password="mPower@786" roles="manager-gui,admin-gui"/>
+
+
+
+
+
+
+
+
+
+
+tomcat session timeout

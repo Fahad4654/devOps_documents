@@ -1,0 +1,66 @@
+________________
+DOCKER POSTGRES:
+________________
+
+1. docker run --name <Suitable_name> -p <suitable_port>:5432 -e POSTGRES_PASSWORD=<suitable_password> -d postgres:12	//creatin container
+	ex: docker run --name postgresql12 -p 6543:5432 -e POSTGRES_PASSWORD=mPower@786 -d postgres:12
+	
+2. docker exec -it <ContaineName/CONTAINER_ID> bash		//entering into container's bash
+	ex: docker exec -it 99c98541a912 bash
+	
+3. psql -U postgres						// to entering psql
+
+
+
+________________________________________________
+LOCALLY BACKUP AND RESTORE FROM DOCKER POSTGRES:
+________________________________________________
+
+**PRE-REQUISITE**: 
+	SAME POSTGRES VERSION AS THE CONTAINER
+
+TO BACKUP:
+
+	pg_dump -h <containerIPaddress> -p <Port> -U <username> -d <dbname> -f /path/to/save/the/Database/DB.sql
+		ex: pg_dump -h 192.168.22.113 -p 6543 -U postgres -d test -f /home/mpower/Desktop/test.sql
+
+BAKCUP A TABLE:
+	pg_dump -h <containerIPaddress> -p <Port> -U <username> -d <dbname> -a -t <table_name> -f /path/to/save/the/Database/DB.sql
+		ex: pg_dump -h 192.168.22.113 -p 6543 -U postgres -d test3 -a -t actor -f /home/emran/Desktop/test3_actorTable.sql
+		
+BACKUP A SHEMA:
+	pg_dump -h <containerIPaddress> -p <Port> -U <username> -d <dbname> -s -f /path/to/save/the/Database/DB.sql	
+		ex: pg_dump -h 192.168.22.113 -p 6543 -U postgres -d test3 -s -f /home/emran/Desktop/test3_actorTable2.sql
+		
+
+TO RESTORE: 
+
+	FOR DB.TAR FILE:
+	pg_restore -h <containerIPaddress> -p <Port> -U <username> -d <dbname> -v /path/to/the/local/Database/DB.tar
+		ex: pg_restore -h 192.168.22.113 -p 6543 -U postgres -d test -v /home/mpower/Desktop/dvdrental.tar
+	
+	FOR DB.SQL FILE:
+	psql -h <containerIPaddress> -p <Port> -U <username> -d <dbname> -f /path/to/the/local/Database/DB.sql
+		ex: psql -h 192.168.22.113 -p 6543 -U postgres -d test2 -f /home/emran/Downloads/fao-edms/fao_edms_07_june_2023.sql
+
+
+
+________________
+REMOTELY ACCESS:
+________________
+
+**PRE-REQUISITE**: 
+	SAME POSTGRES VERSION AS THE CONTAINER
+
+1. psql -h <IP_address> -p <Port> -U <Username>
+	ex: psql -h 192.168.22.113 -p 6543 -U postgres
+
+2. BACKUP AND RESTORE: Same as above
+
+
+
+
+
+
+
+

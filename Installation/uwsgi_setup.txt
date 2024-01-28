@@ -1,0 +1,42 @@
+1. install uwsgi:
+	sudo apt-get install uwsgi
+
+2. install plugins if not presents:
+	check for pythonversion.iso file at /usr/lib/uwsgi/plugins
+	if not prensent install:
+		sudo apt-get install uwsgi-plugin-python3
+
+3. go to python project directory.
+
+4. install python venv if not present:
+	sudo apt-get install python3.10-venv
+
+5. create a venv:
+	python3 -m venv /path/to/venv/nameofvenv
+
+6. activate venv:
+	source /path/to/venv/nameofvenv/bin/activate
+
+7. install pproject's requirement:
+	pip install -r requirements.txt 
+
+8. if any dependency/s create problems comment out the dependency/s and install with single command
+	pip install pcycog2 lxml
+
+9. create a uwsgi ini file:
+	sudo nano uWsgi.ini
+
+10. run the ini file:
+	uwsgi --ini uwsgi.ini
+
+	10.1. to stop the app:
+		uwsgi --stop directory/to/log/uwsgi.pid
+
+	10.2. to see log:
+		sudo tail -f directory/to/log/uwsgi.log
+
+	10.3. to stop the venv:
+		deactivate
+
+11. to see the running app setup nginx and see through that or dedicate a port in uwsgi file.
+

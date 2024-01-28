@@ -1,0 +1,58 @@
+# Mysql-5.7.29
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+To remove MySQL from your system, you can follow these steps:
+    1. Purge the MySQL server package:
+       sudo apt purge mysql-server
+    2. Purge the MySQL client package:
+       sudo apt purge mysql-client
+    3. Purge the MySQL common package:
+       sudo apt purge mysql-common
+    4. Remove any remaining MySQL configuration files and directories:
+       sudo rm -rf /etc/mysql
+       sudo rm -rf /var/lib/mysql
+    5. Remove the MySQL system service:
+       sudo systemctl disable mysql
+       sudo systemctl stop mysql
+    6. Finally, clean up any remaining dependencies:
+       sudo apt autoremove
+By following these steps, you should be able to remove MySQL completely from your system.
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#Remove previous versions:
+
+sudo apt-get purge mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-*
+
+sudo rm -rf /etc/mysql /var/lib/mysql
+
+sudo apt-get autoremove
+
+sudo apt-get autoclean
+
+
+# Download
+
+git clone https://github.com/Fahad4654/Mysql-5.7.29.git
+
+
+# Install (the order of these commands matters!)
+
+sudo apt install libaio1 libtinfo5 libmecab2 python3 libjson-perl
+
+sudo dpkg -i mysql-common_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i libmysqlclient20_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i libmysqlclient-dev_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i libmysqld-dev_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i mysql-community-source_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i mysql-community-client_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i mysql-client_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i mysql-community-server_5.7.29-1ubuntu18.04_amd64.deb
+
+sudo dpkg -i mysql-server_5.7.29-1ubuntu18.04_amd64.deb
+

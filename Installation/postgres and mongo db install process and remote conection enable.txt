@@ -1,0 +1,164 @@
+Postgres 14.3 install: https://techviewleo.com/how-to-install-postgresql-database-on-ubuntu/
+Postgres 12.6 install:https://computingforgeeks.com/install-postgresql-12-on-ubuntu/
+Postgres 9.4 install:
+01.LINK HELP: https://www.postgresql.org/download/linux/ubuntu/
+02.sudo nano /etc/apt/sources.list.d/pgdg.list
+add file os version wise
+like:14.04> deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
+like:16.04> deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main
+04.wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc |   sudo apt-key add -
+05.sudo apt-get update
+06.sudo apt-get -y install qgis python-qgis
+07.sudo apt-get install postgresql-9.4 postgresql-9.4-postgis-2.2
+   sudo apt-get install postgresql-12-postgis-2.5-scripts
+   sudo apt install postgis postgresql-13-postgis-3-scripts
+   sudo apt install postgis postgresql-14-postgis-3-scripts
+08.sudo service postgresql restart
+
+09.sudo su postgres
+10.postgres user and password create:  
+	psql -d template1 -c "CREATE USER mpower WITH PASSWORD 'DB@mPower@786';"
+then exit;
+
+detail: mpower for postgres user and
+        DB@mPower@786 postgres password 
+  
+sudo su postgres
+psql
+create database csvp;
+\q
+
+psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE innovation to mpower;"
+
+psql -c "CREATE EXTENSION IF NOT EXISTS postgis;" -d innovation
+psql -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" -d innovation
+
+
+remote enable for postgress:
+two file change 
+01.sudo nano /etc/postgresql/9.4/main/pg_hba.conf
+02.sudo nano /etc/postgresql/9.4/main/postgresql.conf
+03.sudo service postgresql restart
+
+
+---------------------------------------------------------------------------------------------------
+Mongo Database install:
+
+01.LINK HELP: https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-14-04
+first time add key
+02.sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+03.echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
+04.sudo apt-get update
+05.sudo apt-get -y --force-yes install mongodb-org-server
+06.sudo service mongod restart
+
+remote enable for mongo DB:
+01.sudo nano /etc/mongod.conf
+02.#bind_ip = 127.0.0.1
+03.ctrl+o,enter,ctrl+x
+
+ubuntu-14-04>    https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-16-04
+
+
+
+202.52.232.102-tpis
+
+ssh vagrant@74.50.210.146 -p21042 -Nf -L 27018:localhost:27017
+ 1922  mongorestore --port 27018 -d newdawn newdawn
+
+ssh vagrant@203.112.218.76 -Nf -L 27018:localhost:27017
+mongorestore --port 27018 -d ecss_bbs ecss_bbs
+
+
+
+
+The proxy server received an invalid response from an upstream server.
+The proxy server could not handle the request GET /openmrs.
+
+Reason: Error reading from remote server
+
+Apache/2.2.15 (CentOS) Server at 192.168.19.44 Port 443
+
+
+
+
+
+
+
+mysql 5.6 ubuntu 16.04
+
+ sudo apt-get install software-properties-common
+ $ sudo add-apt-repository -y ppa:ondrej/mysql-5.6
+ $ sudo apt-get update
+ $ sudo apt-get install mysql-server-5.6
+
+GRANT CREATE ON SCHEMA report TO postgres;
+GRANT USAGE ON SCHEMA report TO postgres;
+
+
+
+
+
+CREATE ROLE tup_replication WITH REPLICATION LOGIN PASSWORD 'tupreplication@123';
+
+
+
+
+
+postgres read-only user creation:
+LINK: https://gist.github.com/oinopion/4a207726edba8b99fd0be31cb28124d0#file-read-access-sql-L2
+
+CREATE ROLE readaccess;
+
+-- Grant access to existing tables
+GRANT USAGE ON SCHEMA public TO readaccess;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readaccess;
+
+GRANT ALL ON ALL TABLES IN SCHEMA report TO mpower;
+
+
+-- Create a final user with password
+CREATE USER tomek WITH PASSWORD 'secret';
+GRANT readaccess TO tomek;
+
+
+
+
+
+psql -U postgres -h localhost -p5433 mcare2_05_april_2020 < mcare2_new_02_feb_2020.sql
+
+
+
+01401188179
+
+
+192.168.19.122  openedx LMS
+192.168.19.122:18010 openedx studio
+http://192.168.19.122:18100/docs/
+http://192.168.19.122:18381/
+
+
+sudo service mysqld stop
+sudo service postgresql-9.6 stop
+sudo service openmrs stop
+sudo service httpd stop
+sudo service bahmni-reports stop
+sudo service bahmni-lab stop
+sudo service odoo stop
+sudo service bahmni-erp-connect stop
+sudo service atomfeed-console stop
+sudo service pacs-integration stop
+
+PostgreSQL - How to grant access to users?
+https://tableplus.com/blog/2018/04/postgresql-how-to-grant-access-to-users.html
+PermitRootLogin prohibit-password
+
+
+ns1.raingroupbd.com
+ns2.raingroupbd.com
+
+YES-ACTIVITY.COM ---- godaddy
+ns15.domaincontrol.com
+ns16.domaincontrol.com
+rsync -auv -e ssh --progress sftpuserifc@192.168.19.36:/home/sftpuserifc/* ./
+chmod -R 777 /home/sftpuserifc

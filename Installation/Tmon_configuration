@@ -1,0 +1,43 @@
+1. Get the source code from github:
+	git clone https://github.com/ANGSD/tmon 
+
+2. Enter to the Directory:
+	cd tmon
+
+3. Make:
+	sudo make 
+
+4. Make Install:
+	sudo make install
+
+5. Enable Tmon:
+	systemctl enable tmond.service
+	
+6. Copy tmonrc file to /home/user/ as .tmonrc
+	sudo copy tmonrc ~/.tmonrc
+	
+7. Activate Tmon:
+	sudo tmond
+	
+8. edit ~/.tmonrc file
+	sudo ~/.tmonrc
+		
+		Enter the host and port no. (basically 7777) in it: such as:
+		
+		192.168.22.70	7777
+		192.168.22.113	7777
+
+9. Run to monitor:
+	tmon -f ~/.tmonrc
+	
+	
+	
+	
+	
+
+
+
+
+
+
+More details: https://github.com/ANGSD/tmon/blob/master/README.md

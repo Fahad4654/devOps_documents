@@ -1,0 +1,16 @@
+sudo apt-get update
+sudo apt-get upgrade
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh |
+bash
+source ~/.profile
+nvm install v16.13.1
+sudo apt install npm
+npm -v
+npm install yarn -g
+npm install pm2@latest -g
+pm2 startup systemd
+pm2 save
+pm2 list
+yarn dev
+pm2 start yarn --name bhalo -- dev
+yarn build

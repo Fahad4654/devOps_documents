@@ -1,0 +1,230 @@
+____________________
+DOCKER CLI COMMANDS:
+____________________
+
+docker ps 					//to see all container
+docker run <imageName/ID>				//to run an image
+docker start/stop <containerName/ID>		//to start the container
+docker pause/unpause <containerName/ID>
+
+docker top <containerName/ID>	
+docker stats <containerName/ID>
+
+docker attach <containerName/ID>		//to enter the container
+
+docker kill <containerName/ID>
+docker rm <containerName/ID>			// to remove an container
+docker rmi <imageName/ID>			// to remove an image
+
+docker history <imageName/ID>
+
+
+
+docker build -t myimg1:1.0 .			//to build docker image
+
+docker run -d -p 7171:9003 --name Java_1 my-java-app:1.1 	//7171 = exposing at localhost port, 9003 = container exposed 			
+									port;
+
+docker exec -it <ContaineName/CONTAINER_ID> bash		//entering into container's bash
+	ex: docker exec -it 99c98541a912 bash
+
+
+____
+REF:
+____
+
+
+https://github.com/wsargent/docker-cheat-sheet#dockerfile
+https://docs.docker.com/engine/reference/builder/#environment-replacement
+
+
+
+
+_______________
+DOCKER-COMPOSE:
+_______________
+
+Supported filenames: docker-compose.yml, docker-compose.yaml, compose.yml, compose.yaml
+
+
+
+
+_______
+VOLUME:
+_______
+
+volume = virtual storage
+bind volume = physical storage on machine's given location
+
+
+	docker volume  //get information
+	docker volume create
+	docker volume ls
+	docker volume inspect
+	docker volume rm
+	docker volume prune
+
+
+	docker run --name MyJenkins1 -v myvol1:/var/jenkins_home -p 8080:8080 -p 50000:50000 jenkins
+	docker run --name MyJenkins2 -v myvol1:/var/jenkins_home -p 9090:8080 -p 60000:50000 jenkins
+	docker run --name MyJenkins3 -v /Users/raghav/Desktop/Jenkins_Home:/var/jenkins_home -p 9191:8080 -p 40000:50000 jenkins
+
+
+____________________
+DOCKER-MACHINE: (VM)
+____________________
+
+
+ON LINUX HAVE TO INSTALL 1ST:
+
+	step1: curl -L https://github.com/docker/machine/releases/download/v0.8.2/docker-machine-`uname -s`-`uname -m` >/usr/local/bin/docker-machine && \
+	chmod +x /usr/local/bin/docker-machine
+
+	step2: docker-machine version			//to check is it installed
+
+
+	step3: sudo apt-get install virtualbox		//if vm is not installed
+	
+	step4: cd /etc/vbox/
+	
+	step5: sudo nano networks.conf
+	
+	step6: insert
+		* 0.0.0.0/0 ::/0
+		save & exit
+
+
+
+Step 1 :  Create Docker machines (to act as nodes for Docker Swarm)   Create one machine as manager and others as workers
+    docker-machine create --driver hyperv manager1    docker-machine create --driver virtualbox manager1
+
+   docker-machine:Error with pre-create check: “exit status 126”
+   https://stackoverflow.com/questions/3...
+   brew cask install virtualbox;
+
+   Create one manager machine
+   and other worker machines
+
+Step 2 :  Check machine created successfully
+    docker-machine ls
+    docker-machine ip manager1
+
+Step 3 :  SSH (connect) to docker machine
+    docker-machine ssh manager1
+
+Step 4 :  Initialize Docker Swarm    docker swarm init --advertise-addr MANAGER_IP
+    docker node ls
+    (this command will work only in swarm manager and not in worker)
+
+Step 5 :  Join workers in the swarm
+    Get command for joining as worker
+    In manager node run command
+    docker swarm join-token worker
+    This will give command to join swarm as worker
+
+    docker swarm join-token manager
+    This will give command to join swarm as manager
+
+    SSH into worker node (machine) and run command to join swarm as worker
+   
+    In Manager Run command - docker node ls to verify worker is registered and is ready
+  
+    Do this for all worker machines
+
+Step 6 :  On manager run standard docker commands
+    docker info
+    check the swarm section 
+    no of manager, nodes etc
+
+    Now check docker swarm command options 
+    docker swarm 
+
+Step 7 :  Run containers on Docker Swarm
+    docker service create --replicas 3 -p 80:80 --name serviceName nginx
+    Check the status:
+    docker service ls
+    docker service ps serviceName
+    Check the service running on all nodes
+    Check on the browser by giving ip for all nodes
+
+Step 8 :  Scale service up and down
+   On manager node 
+   docker service scale serviceName=2
+
+Inspecting Nodes (this command can run only on manager node)
+docker node inspect nodename
+docker node inspect self
+docker node inspect worker1
+
+Step 9 : Shutdown node
+   docker node update --availability drain worker1
+
+Step 10 :  Update service
+   docker service update --image imagename:version web
+   docker service update --image nginx:1.14.0 serviceName
+
+Step 11 :  Remove service
+   docker service rm serviceName
+docker swarm leave : to leave the swarm
+docker-machine stop machineName : to stop the machine
+docker-machine rm machineName : to remove the machine
+
+
+
+
+______________
+FOR REACT APP:
+______________
+
+1. Go to the directory where the project is:
+
+2. Build the project: npm run build / yarn build /ng build
+3. Then run to build container:
+	docker run -it -d -p 8080:80/tcp --name react -v /home/emran/Downloads/m/aceexam-student/build:/etc/nginx/html nginx
+	
+	
+
+______________
+FOR JAVA APP:
+______________
+
+1. Go to the directory where the project is:
+
+2. Build the project using docker:
+	create docker file Dockerfile: (example Dockerfile bellow)
+		sudo nano Dockerfile
+	Run to buil docker image: (run where the projects codes are)
+		docker build -t <imagename> .
+
+3. Run to start container:
+	docker run -d -p 9003:9003 --name <containerName> <imagename>
+	
+
+
+*********Dockerfile*************
+--------------------------------
+
+# Use an official Java 8 and Maven image as base
+FROM maven:3.8.4-openjdk-8 AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the source code to the container
+COPY . /app
+
+# Build the application
+RUN mvn clean package
+
+# Create a new image with a smaller base
+FROM openjdk:8-jre-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the built JAR from the builder image
+COPY --from=builder /app/target/cbhc-0.0.1-SNAPSHOT.jar /app/app.jar
+
+# Run the application
+CMD ["java", "-jar", "app.jar"]
+

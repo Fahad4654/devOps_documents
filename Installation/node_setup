@@ -1,0 +1,21 @@
+nvm - 0.39.3
+
+1. curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+
+   close terminal.
+
+2. nvm --version
+
+install node v- 16.18.1 via nvm
+
+3. nvm install 16.18.1
+4. nvm use v16.18.1
+5. nvm alias default 16.18.1
+
+npm -
+to check npm version: npm -v
+update npm if needed: npm install -g npm@9.8.1
+
+install yarn - 1.22.19 via npm
+
+6. npm install --global yarn
