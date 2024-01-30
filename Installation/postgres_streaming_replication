@@ -80,6 +80,43 @@ ON REPLICA SERVER:
 
 
 
+configure pg_pool:
+
+https://medium.com/@c.ucanefe/pgpool-installation-connection-test-with-python-c2ef7501a174
+
+
+
+
+
+
+
+
+Open the syslog daemon's configuration file. This file is typically located at /etc/syslog.conf or /etc/rsyslog.conf, depending on your system.
+
+Add a line to specify the location where pgpool-II messages should be logged. For example:
+	local0.*    /var/log/pgpool.log
+
+This line tells the syslog daemon to log messages from the local0 facility to the specified file.
+Save the changes to the syslog configuration file.
+Restart the syslog daemon to apply the changes. The command to restart the syslog daemon may vary depending on your system. For example:
+	sudo service syslog restart
+
+Update the log_destination parameter in your pgpool-II configuration file (pgpool.conf) to use syslog:
+	log_destination = 'syslog'
+
+Restart the pgpool-II service:
+	sudo service pgpool2 restart
+
+Now, pgpool-II should be configured to log messages to the specified syslog facility, and those messages will be directed to the /var/log/syslog.log file. Ensure that the syslog facility and the log file path are correctly configured in both the syslog daemon and the pgpool-II configuration file.
+	sudo tail -f /var/log/syslog
+
+
+
+
+
+
+
+
 
 
 
