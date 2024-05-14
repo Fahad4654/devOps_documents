@@ -1,0 +1,48 @@
+Step 1
+
+Firstly, it should be downloaded the nodejs on a machine has internet connection.
+It can be download on this link: https://nodejs.org/en/download
+
+Step 2
+
+tar -xvf <your_tar>
+//example --> sudo tar -xvf node-v14.15.5-linux-x64.tar.xz
+
+
+Step 3
+
+Then cp the extracted tar to /usr/ folder
+ sudo cp -r directory_name/{bin,include,lib,share} /usr/
+//example ---> sudo cp -r node-v14.15.5-linux-x64/{bin,include,lib,share} /usr/
+
+Step 4
+
+Update the path
+
+export PATH=/usr/node_directory_name/bin:$PATH
+//example -->export PATH=/usr/node-v14.15.5-linux-x64/bin:$PATH
+
+
+
+Step 5
+
+Check the node and npm version
+
+node --version
+npm --version
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+REF: https://medium.com/@pesengizem/nodejs-offline-set-up-on-ubuntu-20-04-31bc79d96114
