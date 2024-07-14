@@ -8,6 +8,12 @@
 
 
 
+/apache-tomcat-8.5.23/webapps/manager/META-INF location, then edit context.xml
+
+<Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="^.*$" />
+
+
 
 
 

@@ -1,0 +1,28 @@
+create a folder for database backup: (if doesn't exist)
+	mkdir ~/DB/
+
+set permission
+	sudo chmod og+X /home ~/
+	
+start DB backup
+
+	cd ~/DB/
+	
+	sudo su postgres
+	
+	pg_dump db_name > dbname.sql
+	
+take the dbname.sql file to restore
+restore db:
+
+	cd /path/to/dbname.sql
+
+	sudo su postgres
+	
+	psql 
+	
+	create database newdbname;
+	
+	\q
+	
+	psql newdbname < dbname.sql

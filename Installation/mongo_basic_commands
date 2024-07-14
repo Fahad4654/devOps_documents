@@ -1,0 +1,36 @@
+MONGO DATABASE COMMANDS:
+------------------------
+
+
+TO ENTER THE MONGO CONSOLE:
+1.
+	> mongo
+	> mongo your_database_name
+	> mongo --host your_host --port your_port
+	> mongo -u your_username -p your_password --authenticationDatabase your_auth_database
+
+
+TO SHOW DBS:
+1. show Databases
+
+TO BACKUP:
+1.
+	> mongodump --db=mydatabase --out=/path/to/backup/directory
+	> mongodump --db=mydatabase --host=your_host --port=your_port --out=/path/to/backup/directory
+	> mongodump --db=mydatabase -u your_username -p your_password --authenticationDatabase your_auth_database --out=/path/to/backup/directory
+
+TO RESTORE:
+1.
+	> mongorestore --db=mydatabase /path/to/backup/directory/mydatabase
+	> mongorestore --db=mydatabase --host=your_host --port=your_port /path/to/backup/directory/mydatabase
+	> mongorestore --db=mydatabase -u your_username -p your_password --authenticationDatabase your_auth_database /path/to/backup/directory/mydatabase
+
+TO CREATE:
+1. mongo
+2. use DBname
+
+TO DROP:
+1. mongo 
+2. use mydatabase
+3. db.dropDatabase()
+

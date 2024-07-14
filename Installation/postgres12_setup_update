@@ -105,6 +105,14 @@ ______________________________
 
 
 if permission issues: sudo chmod og+X /home /home/user
+
+__________________
+select permission:
+__________________
+
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO aceexamuser;
+
 ________________________________________________________________________________________
 for more: https://computingforgeeks.com/install-postgresql-12-on-ubuntu/#google_vignette
 ________________________________________________________________________________________
