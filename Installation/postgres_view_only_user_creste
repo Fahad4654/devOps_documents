@@ -1,0 +1,25 @@
+READ-ONLY USER CREATE IN POSTGRES:
+----------------------------------
+
+postgres=# CREATE USER view_user WITH PASSWORD 'mPower@786';
+CREATE ROLE
+
+postgres=# GRANT CONNECT ON DATABASE shufola TO view_user;
+GRANT
+
+postgres=# \c shufola 
+You are now connected to database "shufola" as user "postgres".
+
+shufola=# GRANT USAGE ON SCHEMA public TO view_user ;
+GRANT
+
+
+shufola=# GRANT SELECT ON ALL TABLES IN SCHEMA public TO view_user ;
+GRANT
+
+shufola=# ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO view_user ;
+ALTER DEFAULT PRIVILEGES
+
+
+shufola=# 
+

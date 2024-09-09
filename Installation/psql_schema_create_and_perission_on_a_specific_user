@@ -1,0 +1,83 @@
+Switch user:
+
+	sudo su postgres
+	
+Enter in psql:
+
+	psql
+	
+Connect to database:
+
+	\c database_name
+	
+Create a Schema:
+
+	CREATE SCHEMA schema_name AUTHORIZATION view_user;
+
+Grant Usage on the Schema:
+
+	GRANT USAGE ON SCHEMA schema_name TO view_user;
+
+Grant Select (Read) Permissions on All Tables in the Schema:
+	
+	GRANT SELECT ON ALL TABLES IN SCHEMA schema_name TO view_user;
+
+ Grant Write Permissions on All Tables in the Schema:
+ 	
+ 	GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA schema_name TO view_user;
+
+Automatic Permissions on New Tables:
+
+	ALTER DEFAULT PRIVILEGES IN SCHEMA schema_name GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO view_user;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ALSO FOR MAIN USER
+
+
+
+ostgres=# \c msurveyproduct 
+You are now connected to database "msurveyproduct" as user "postgres".
+
+msurveyproduct=# GRANT USAGE ON SCHEMA schema_name TO kobo ;
+GRANT
+
+msurveyproduct=# GRANT SELECT ON ALL TABLES IN SCHEMA schema_name TO kobo ;
+GRANT
+
+msurveyproduct=# GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA schema_name TO kobo ;
+GRANT
+
+
+msurveyproduct=# ALTER DEFAULT PRIVILEGES IN SCHEMA schema_name GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO view_user;
+ALTER DEFAULT PRIVILEGES
+
+msurveyproduct=# ALTER DEFAULT PRIVILEGES IN SCHEMA schema_name GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO kobo;
+ALTER DEFAULT PRIVILEGES
+

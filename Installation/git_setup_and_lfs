@@ -1,0 +1,30 @@
+sudo apt-get update
+sudo apt-get install git
+
+
+git config --global user.name "Emma Paris"
+git config --global user.email "eparis@atlassian.com"
+
+
+
+
+
+
+
+
+
+##GIT LFS 
+
+git lfs install
+
+git lfs track "*.war"
+
+git lfs track "*.omod"
+
+git add openmrs.war 
+
+git add fhir2-1.8.0.omod 
+
+git commit -m "add file"
+
+git push
