@@ -24,6 +24,11 @@ _______________
 10. 	sudo docker run hello-world
 
 			for more: https://docs.docker.com/engine/install/ubuntu/
+			
+			
+11.  sudoless docke:
+	
+	sudo usermod -aG docker $USER
 
 
 

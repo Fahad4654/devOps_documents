@@ -1,0 +1,74 @@
+MONITORING DOCKER CONTAINER OF OPENPROJECT:
+-------------------------------------------
+
+
+19.136
+CREATE THE SCRIPT:
+	sudo nano /opt/DB_monitor/monitor_container.sh
+
+GIVE EXECUTABLE PERMISSION:
+	sudo chmod -R 777 /opt/DB_monitor/monitor_container.sh	
+	
+CREATE PROGRAM FILE FOR SUPERVISOR:
+	sudo nano /etc/supervisor/conf.d/monitor_container.conf
+	
+RESTART SUPERVISOR:
+	sudo service supervisor restart
+	
+SEE THE LOG FILE OF THE SCRIPT AS GIVEN IN PROGRAM FILE OF SUPERVISOR:
+	sudo tail -f /var/log/monitor_container.log
+	
+	
+_____________________________________________________________________________________
+EXAMPLES:
+
+_____________________________________
+/opt/DB_monitor/monitor_container.sh:
+-------------------------------------
+
+#!/bin/bash
+
+# Container name to monitor
+CONTAINER_NAME="compose-db-1"
+
+# CPU usage threshold
+THRESHOLD=98
+
+while true; do
+    # Get the current datetime in the desired format
+    DATETIME=$(date '+%d-%b-%Y %H:%M:%S')
+
+    # Extract the CPU usage of the specified container
+    CPU_USAGE=$(docker stats --no-stream --format "{{.Name}}: {{.CPUPerc}}" | grep "$CONTAINER_NAME" | awk -F': ' '{print $2}' | sed 's/%//')
+
+    # Check if the CPU usage is greater than the threshold
+    if [ "$CPU_USAGE" != "" ] && (( $(echo "$CPU_USAGE > $THRESHOLD" | bc -l) )); then
+        echo "[$DATETIME] CPU usage ($CPU_USAGE%) of $CONTAINER_NAME exceeds $THRESHOLD%. Restarting the container..."
+        docker restart "$CONTAINER_NAME"
+    else
+        echo "[$DATETIME] CPU usage ($CPU_USAGE%) is under control for $CONTAINER_NAME."
+    fi
+
+    # Wait for 10 seconds before checking again
+    sleep 10
+done
+
+
+
+
+
+_____________________________________________
+/etc/supervisor/conf.d/monitor_container.conf
+---------------------------------------------
+
+[program:monitor_container]
+command=/opt/DB_monitor/monitor_container.sh
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/monitor_container.log
+stdout_logfile=/var/log/monitor_container.log
+startsecs=10
+stopwaitsecs=600
+stdout_logfile_maxbytes=10MB	#logfile_max_size
+stdout_logfile_backups=2	#logfiles_backup
+

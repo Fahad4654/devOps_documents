@@ -1,0 +1,25 @@
+step-1:
+
+	psql
+
+step-2: 
+
+	\c db_name
+
+step-3:
+
+	CREATE TABLE table_name_clone (LIKE table_name INCLUDING ALL);
+
+step-4:
+
+	INSERT INTO table_name_clone
+	SELECT * FROM table_name;
+	
+	
+	
+example:
+
+CREATE TABLE core."user_copy" (LIKE core."user" INCLUDING ALL);
+
+INSERT INTO core."user_copy"
+SELECT * FROM core."user";

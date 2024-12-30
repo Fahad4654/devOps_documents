@@ -39,21 +39,21 @@ ____________________________________________________________________
 1. sudo su postgres
 
 2. postgres user and password create:  
-	psql -d template1 -c "CREATE USER <username> WITH PASSWORD 'DB@mPower@786';"
+	psql -d template1 -c "CREATE USER opensrp_admin WITH PASSWORD 'admin';"
 
 3. exit;
 
-detail: <username> for postgres user and
-        DB@mPower@786 postgres password 
+detail: opensrp_admin for postgres user and
+        admin postgres password 
   
 4. sudo su postgres
 
 5. psql
 
-6. create database <DBname>;
+6. create database opensrp;
 7. \q
 
-8. psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE <DBname> to <username>;"
+8. psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE opensrp to opensrp_admin;"
 
 9. psql -c "CREATE EXTENSION IF NOT EXISTS postgis;" -d <DBname>
 10. psql -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" -d <DBname>

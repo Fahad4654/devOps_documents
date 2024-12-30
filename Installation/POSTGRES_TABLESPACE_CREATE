@@ -1,0 +1,58 @@
+POSTGRES TABLESPACE CREATE:
+---------------------------
+
+STEPS:
+
+1. Create the directory on the server:
+
+	sudo mkdir /path/to/tablespace
+	
+	sudo chown postgres:postgres /path/to/tablespace
+	
+	sudo chmod 700 /path/to/tablespace
+	
+	
+	
+2. Create the tablespace in PostgreSQL:	
+
+	sudo su postgres
+
+	psql
+	
+	CREATE TABLESPACE tablespace_name OWNER username LOCATION '/path/to/tablespace';
+	
+	
+	
+2. create database if not exist:
+
+	sudo su postgres
+	
+	psql
+	
+	create database database_name;
+	
+	\q
+	
+	
+	
+3. grant a user to the database:
+
+	psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE database_name to username;
+	
+
+		
+3. Creating a Table in the Tablespace:
+
+	psql -h hostname -U username -d database_name
+
+	CREATE TABLE table_name (
+	    id SERIAL PRIMARY KEY,
+	    name TEXT
+	) TABLESPACE tablespace_name;
+	
+4. Move Existing Tables to a Tablespace:
+
+
+	ALTER TABLE table_name SET TABLESPACE tablespace_name;
+	
+
