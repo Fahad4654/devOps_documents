@@ -64,3 +64,20 @@ _____________________
 2.	pass: Access token
 
 
+
+_____________________
+DOCKER REMOTE ACCESS:
+_____________________
+
+https://docs.docker.com/engine/daemon/remote-access/
+
+
+1. sudo systemctl edit docker.service
+2. write it 
+
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375
+
+3. sudo systemctl daemon-reload
+4. sudo systemctl restart docker.service
