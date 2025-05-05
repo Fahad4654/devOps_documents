@@ -1,0 +1,6 @@
+sudo iptables -L -n
+
+sudo iptables -I INPUT -p tcp --dport 9003 -j ACCEPT
+sudo service iptables save
+sudo service iptables restart
+
