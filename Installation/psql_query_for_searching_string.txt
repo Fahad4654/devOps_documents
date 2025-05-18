@@ -1,0 +1,32 @@
+DO $$
+DECLARE
+    tbl RECORD;
+    col RECORD;
+    qry TEXT;
+    val TEXT := '3342ae57-da3d-4f1f-9917-9ad55484efa4';
+    result RECORD;
+BEGIN
+    FOR tbl IN
+        SELECT table_schema, table_name
+        FROM information_schema.tables
+        WHERE table_type = 'BASE TABLE'
+          AND table_schema NOT IN ('pg_catalog', 'information_schema')
+    LOOP
+        FOR col IN
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = tbl.table_schema
+              AND table_name = tbl.table_name
+              AND data_type IN ('text', 'character varying', 'uuid')
+        LOOP
+            qry := FORMAT(
+                'SELECT COUNT(*) AS matches FROM %I.%I WHERE %I::text = %L',
+                tbl.table_schema, tbl.table_name, col.column_name, val
+            );
+            EXECUTE qry INTO result;
+            IF result.matches > 0 THEN
+                RAISE NOTICE 'Found in %.%.% (% rows)', tbl.table_schema, tbl.table_name, col.column_name, result.matches;
+            END IF;
+        END LOOP;
+    END LOOP;
+END$$;

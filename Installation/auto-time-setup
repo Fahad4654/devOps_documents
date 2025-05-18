@@ -1,0 +1,5 @@
+sudo apt update
+sudo apt install -y ntp
+sudo systemctl enable ntp
+sudo systemctl start ntp
+sudo systemctl status ntp
