@@ -30,6 +30,15 @@ _______________
 	
 	sudo usermod -aG docker $USER
 
+	Alternatives
+
+	js@js-ms:/$ sudo groupadd docker
+	groupadd: group 'docker' already exists
+	js@js-ms:/$ sudo gpasswd -a $USER docker
+	Adding user js to group docker
+	js@js-ms:/$ newgrp dockeral
+	js@js-ms:/$ docker images
+
 
 
 _______________________
