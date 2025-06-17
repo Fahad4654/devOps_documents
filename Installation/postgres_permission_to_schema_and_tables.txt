@@ -1,0 +1,32 @@
+DO $$
+DECLARE
+    r RECORD;
+BEGINFOR r INSELECT tablename
+FROM pg_tables
+WHERE schemaname ='report'
+    LOOP
+EXECUTE'ALTER TABLE report.'|| quote_ident(r.tablename) ||' OWNER TO opensrp_admin';
+END LOOP;
+END $$;
+
+
+
+
+
+
+
+
+DO    
+$$     
+DECLARE
+    seq RECORD;
+BEGIN
+    FOR seq IN
+        SELECT sequence_schema, sequence_name
+        FROM information_schema.sequences
+        WHERE sequence_schema = 'report'
+    LOOP                                                                                       
+        EXECUTE format('ALTER SEQUENCE %I.%I OWNER TO opensrp_admin;', seq.sequence_schema, seq.sequence_name);
+    END LOOP;
+END
+$$
