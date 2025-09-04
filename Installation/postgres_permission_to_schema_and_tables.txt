@@ -1,7 +1,7 @@
 DO $$
 DECLARE
     r RECORD;
-BEGINFOR r INSELECT tablename
+BEGIN FOR r IN SELECT tablename
 FROM pg_tables
 WHERE schemaname ='report'
     LOOP
