@@ -1,11 +1,14 @@
+All tables in a schema:
+
+
 DO $$
 DECLARE
     r RECORD;
 BEGIN FOR r IN SELECT tablename
 FROM pg_tables
-WHERE schemaname ='report'
+WHERE schemaname ='public'
     LOOP
-EXECUTE'ALTER TABLE report.'|| quote_ident(r.tablename) ||' OWNER TO opensrp_admin';
+EXECUTE'ALTER TABLE public.'|| quote_ident(r.tablename) ||' OWNER TO opensrp_admin';
 END LOOP;
 END $$;
 
@@ -15,6 +18,7 @@ END $$;
 
 
 
+All sequence in a schema:
 
 DO    
 $$     
@@ -24,9 +28,56 @@ BEGIN
     FOR seq IN
         SELECT sequence_schema, sequence_name
         FROM information_schema.sequences
-        WHERE sequence_schema = 'report'
+        WHERE sequence_schema = 'schedule'
     LOOP                                                                                       
         EXECUTE format('ALTER SEQUENCE %I.%I OWNER TO opensrp_admin;', seq.sequence_schema, seq.sequence_name);
     END LOOP;
 END
-$$
+$$;
+
+
+
+
+
+All Function in a DB in all schema:
+
+DO $$
+DECLARE
+    r RECORD;
+BEGIN 
+    FOR r IN 
+        SELECT n.nspname as schema_name,
+               p.proname as function_name, 
+               pg_get_function_identity_arguments(p.oid) as function_args
+        FROM pg_proc p
+        JOIN pg_namespace n ON p.pronamespace = n.oid
+        WHERE n.nspname NOT LIKE 'pg_%'  -- exclude system schemas
+          AND n.nspname != 'information_schema'
+    LOOP
+        EXECUTE 'ALTER FUNCTION ' || quote_ident(r.schema_name) || '.' || 
+                quote_ident(r.function_name) || '(' || r.function_args || 
+                ') OWNER TO opensrp_admin';
+    END LOOP;
+END $$;
+
+
+
+
+
+Permission to all views of all schema:
+
+
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN 
+        SELECT schemaname, viewname 
+        FROM pg_catalog.pg_views 
+        -- This filter ensures you only touch user-created schemas
+        WHERE schemaname NOT IN ('pg_catalog', 'information_schema') 
+          AND schemaname NOT LIKE 'pg_toast%'
+    LOOP
+        EXECUTE format('ALTER VIEW %I.%I OWNER TO %I', r.schemaname, r.viewname, 'opensrp_admin');
+    END LOOP;
+END $$;

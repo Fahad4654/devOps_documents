@@ -1,0 +1,666 @@
+1. sudo apt-get update
+2. sudo apt-get install openjdk-8-jdk
+3. install mysql 5.7
+    we are using docker in this case though mysql5.7 is deprecated.
+    mkdir ~/mysql-docker
+    cd ~/mysql-docker
+    mkdir config
+    nano config/my.cnf 
+    insert these:
+[mysqld]
+# Performance tuning
+innodb_buffer_pool_size = 1G   # ~70-80% of total system RAM for heavy DB workloads
+innodb_log_file_size = 256M    # Size of each log file in the group
+innodb_flush_log_at_trx_commit = 1 # ACID compliance; set to 2 if durability is less critical
+innodb_file_per_table = 1      # Use separate tablespace for each table
+query_cache_type = 1           # Enable query cache (useful for reads)
+query_cache_size = 64M         # Allocate 64MB for query caching
+
+max_allowed_packet=64M
+bind-address = 0.0.0.0
+# Connection tuning
+max_connections = 200          # Increase for more simultaneous connections
+wait_timeout = 3600            # Increase idle session timeout
+interactive_timeout = 3600     # Increase timeout for interactive sessions
+
+# Logging and Monitoring
+slow_query_log = 1             # Enable slow query logging
+slow_query_log_file = /var/lib/mysql/mysql-slow.log
+long_query_time = 2            # Log queries that take longer than 2 seconds
+
+# Security
+skip-symbolic-links = 1        # Disable symbolic links for security
+
+[client]
+max_allowed_packet=64M
+
+
+4. nano docker-compose.yml
+    insert these:
+services:
+  mysql:
+    image: fahadkabir/mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-openmrs}
+      MYSQL_USER: ${MYSQL_USER:-openmrs}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-openmrs}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./config:/etc/mysql/conf.d
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  db_data:
+    driver: local
+
+5. restore existing DB
+
+6. download tomcat version 8.5.100
+    wget https://archive.apache.org/dist/tomcat/tomcat-8///v8.5.100/bin/apache-tomcat-8.5.100.zip
+    unzip
+    unzip apache-tomcat-8.5.100.zip
+    move to /opt or specific place (we are using at /opt)
+    mv apache-tomcat-8.5.100 /opt/tomcat8
+7. download openmrs version 2.1.4
+    wget https://sourceforge.net/projects/openmrs/files/releases/OpenMRS_Platform_2.1.4/openmrs.war/download
+    move to tomcat
+    mv download /opt/tomcat8/webapps/openmrs.war
+8. download refapp 2.8.0
+    wget https://sourceforge.net/projects/openmrs/files/releases/OpenMRS_Reference_Application_2.8.0/referenceapplication-addons-2.8.0.zip/download
+    mv download refapp-2.8.0.zip
+    unzip refapp-2.8.0.zip
+    mv refapp-2.8.0 ~/.Openmrs/modules/
+    download webservices-rest module version 2.31.0
+    wget https://addons.openmrs.org/api/v1/addon/org.openmrs.module.webservices-rest/2.31.0/download
+    rm ~/.Openmrs/modules/webservices.rest-*.mod
+    mv webservices.rest-2.31.0.omod ~/.Openmrs/modules/
+    start tomcat
+    cd /opt/tomcat8/bin
+    ./startup.sh
+
+
+9. setup intelehealth-middleware
+    install maven 3.6.3
+    download 3.6.3 -> 
+    wget https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip
+    unzip apache-maven-3.6.3-bin.zip
+    mv apache-maven-3.6.3 /opt/maven/
+    update .bashrc
+    insert at the end:
+export M2_HOME=/opt/maven
+export PATH=$PATH:$M2_HOME/bin
+
+10. reload bashrc
+    source ~/.bashrc
+11. clone git repo
+    git clone git@github.com:Intelehealth/intelehealth-middleware.git
+12. cd intelehealth-middleware/EMR-Middleware
+13. nano src/main/resources/db_properties.xml
+    insert this: according to your setup
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <environments default="development">
+
+        <environment id="intelehealthAwsTest">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="poolMaximumActiveConnections" value="6"/>
+                <property name="poolMaximumIdleConnections" value="3"/>
+                <property name="poolMaximumCheckoutTime" value="24000"/>
+                <property name="poolPingConnectionsNotUsedFor" value="24000"/>
+                <property name="poolPingEnabled" value="true"/>
+                <property name="poolPingQuery" value="select 1"/>
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://192.168.19.122:3306/openmrs?autoReconnect=true&amp;useSSL=FALSE"/>
+
+
+                <property name="username" value="root"/>
+                <property name="password" value="openmrs"/>
+
+            </dataSource>
+        </environment>
+
+
+    </environments>
+    <mappers>
+        <mapper class="com.emrmiddleware.dmo.PatientDMO"/>
+        <mapper class="com.emrmiddleware.dmo.VisitDMO"/>
+        <mapper class="com.emrmiddleware.dmo.EncounterDMO"/>
+        <mapper class="com.emrmiddleware.dmo.ObsDMO"/>
+        <mapper class="com.emrmiddleware.dmo.LocationDMO"/>
+        <mapper class="com.emrmiddleware.dmo.ProviderDMO"/>
+        <mapper class="com.emrmiddleware.dmo.PersonDMO"/>
+        <mapper class="com.emrmiddleware.dmo.UserCredentialsDMO"/>
+        <mapper class="com.emrmiddleware.dmo.MindmapDMO"/>
+
+    </mappers>
+</configuration>
+
+14. build middleware
+    mvn clean package -Dmaven.test.skip=true
+15. update tomcat's setenv.sh
+    nano /opt/tomcat8/bin/setenv.sh
+    insert this: according to your setup
+
+export DBHOST='192.168.19.122'
+export SUMMARY_LINK='63bf4014-2bbf-4c92-a72f-0309ed18a10e'
+export DBURL='jdbc:mysql://192.168.19.122:3306/openmrs?stringtype=unspecified'
+export OPENMRS_JDBC_URL='jdbc:mysql://192.168.19.122:3306/openmrs?stringtype=unspecified'
+export DBUSER='root'
+export OPENMRS_DB_USER='root'
+export DBPASS='openmrs'
+export OPENMRS_DB_USER_PASSWORD='openmrs'
+export MMBaseURL='https://intelehealth-prod-master-new.mpower-social.com:3004'
+export MMHOST='https://intelehealth-prod-master-new.mpower-social.com:3004'
+export CONFIGURL='https://intelehealth-prod-master-new.mpower-social.com:4004/api/config/'
+
+16. move the middleware to tomcat
+    cp target/EMR-Middleware.war /opt/tomcat8/webapps/
+
+17. restart tomcat
+    cd /opt/tomcat8/bin
+    ./shutdown.sh
+    ./startup.sh
+
+
+Setup Doctor webapps:
+
+1. Install nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+2. Close and reopen terminal.
+
+3. Check nvm version
+    nvm --version
+
+4. Install node v- 24.12.0 via nvm
+    nvm install 24.12.0
+    nvm use v24.12.0
+    nvm alias default 24.12.0
+5. clone doctor repo: 
+    git clone git@github.com:Intelehealth/intelehealth-doctor-webapp.git
+    cd intelehealth-doctor-webapp
+6. create .env file: 
+    .env
+    insert this:
+        
+PRODUCTION=false
+BASE=https://intelehealth-prod-master-new.mpower-social.com
+BASE_URL=https://intelehealth-prod-master-new.mpower-social.com/openmrs/ws/rest/v1
+BASE_URL_CORD_APP=https://intelehealth-prod-master-new.mpower-social.com/openmrs/coreapps/diagnoses
+BASE_URL_LEGACY=https://intelehealth-prod-master-new.mpower-social.com/openmrs/
+MIND_MAP_URL=https://intelehealth-prod-master-new.mpower-social.com:3004/api
+CONFIG_URL=https://intelehealth-prod-master-new.mpower-social.com:4004/api
+NOTIFICATION_URL=https://intelehealth-prod-master-new.mpower-social.com:3004/notification
+SOCKET_URL=https://intelehealth-prod-master-new.mpower-social.com:3004
+CAPTCHA_SITE_KEY=6LdbXvApAAAAANFjXjgOQnaX7ESR2IBPIOO9KpvS
+WEB_RTC_SDK_SERVER_URL=wss://intelehealth-prod-master-new.mpower-social.com:9090
+WEB_RTC_TOKEN_SERVER_URL=https://intelehealth-prod-master-new.mpower-social.com:3030
+SITE_KEY=6Lf_UPEpAAAAAJesudYovsIWUXdpCtCGUtphyqIZ
+VAPID_PUBLIC_KEY=BACBe2a-6cpm7RESlWn4Ln1ofnSQxbeedmg5kuPq9CqJ8hX22cfFUGaU5R5E9bM8w-7M_NDWBPOz3zVzfKP0mm4
+AUTH_GATE_WAY_URL=https://intelehealth-prod-master-new.mpower-social.com:3030/v2/
+FIREBASE_API_KEY=AIzaSyDCC1JLFTVhM5smLy5BTn96dhiOj_gSUWQ
+FIREBASE_AUTH_DOMAIN=intelhealth-mpower.firebaseapp.com
+FIREBASE_PROJECT_ID=intelhealth-mpower
+FIREBASE_STORAGE_BUCKET=intelhealth-mpower.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=971382487208
+FIREBASE_APP_ID=1:971382487208:web:13f83dac2ff14f54bdaa9d
+SHOW_CAPTCHA=false
+FEATURES_LIST=["followUpType", "tnmStaging", "referralFacility", "priorityOfReferral","visitFollowUp","visitNotes"]
+
+
+7. Install dependencies
+    npm install
+8. build the app
+    npm run build
+9. move to tomcat
+    cd /opt/tomcat8/webapps
+    cp -r dist/intelehealth-ui ./root
+10. restart tomcat
+    cd /opt/tomcat8/bin
+    ./shutdown.sh
+    ./startup.sh
+
+Setup intelehealth-backend:
+
+1. Install pm2:
+    npm install -g pm2@latest
+2. Clone the repo: 
+    git clone git@github.com:Intelehealth/intelehealth-backend-service.git
+    cd intelehealth-backend-service
+3. start auth gateway:
+    cd auth-gateway/
+    nano .env
+    insert this:
+NODE_ENV=production
+PORT=3030
+OPENMRS_USERNAME=admin
+OPENMRS_PASS=apple@1Mango
+JWT_SECRET=$2y$10$HFslQil9wxov/iKuUq6RZesfxlRyokFJSWt4knhWF/U1oiWEfRjA2
+SSL_KEY_PATH=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/privkey.pem
+SSL_CERT_PATH=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/fullchain.pem
+DOMAIN=intelehealth-prod-master-new.mpower-social.com
+#ALLOWED_ORIGINS=[xxxx, xxxx, xxxx]
+ALLOWED_ORIGINS=["http://intelehealth-prod-master-new.mpower-social.com:4200", "http://localhost:4200","https://intelehealth-prod-master-new.mpower-social.com","http://127.0.0.1:3030","https://intelehealth-prod-master-new.mpower-social.com:3030"]
+MYSQL_DIALECT=mysql
+MYSQL_HOST=192.168.19.122
+MYSQL_PORT= 3306
+MYSQL_USERNAME=root
+MYSQL_PASS=openmrs
+MYSQL_DB=mindmap_server
+MYSQL_OPENMRS_DB=openmrs
+
+4. Install dependencies
+    npm install
+5. start the server
+    pm2 start bin/www --name auth-gateway
+    pm2 save
+6. start portal:
+    cd ../portal/
+    nano .env
+    insert this:
+NODE_ENV=prod
+PORT=3004
+DOMAIN=intelehealth-prod-master-new.mpower-social.com
+OPENMRS_USERNAME=admin
+OPENMRS_PASS=apple@1Mango
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_DIALECT=mysql
+MYSQL_USERNAME=root
+MYSQL_PASS=openmrs
+MYSQL_DB=mindmap_server
+MYSQL_OPENMRS_DB=openmrs
+APIKEY_2FACTOR=xxxx
+OPEN_AI_KEY=xxxx
+MAIL_USERNAME=xxxx
+MAIL_PASSWORD=xxxx
+
+VAPID_MAILTO=mailto:support@intelehealth.org
+SSL_PRIVATE_KEY=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/privkey.pem
+SSL_CERT=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/fullchain.pem
+
+OAUTH_CLIENT_ID=110202445555012147496
+OAUTH_CLIENT_SECRET=PW0VH5vwz9yOtH7EErjQoipFpofpeVXqLGqlqK9w
+VAPID_PUBLIC_KEY=BACBe2a-6cpm7RESlWn4Ln1ofnSQxbeedmg5kuPq9CqJ8hX22cfFUGaU5R5E9bM8w-7M_NDWBPOz3zVzfKP0mm4
+VAPID_PRIVATE_KEY=V2aVb9BScKyuQmGMbknTpBS38j5sOr4DipMoacfMYUM
+FIREBASE_DB_URL="https://intelhealth-mpower-default-rtdb.firebaseio.com"
+FIREBASE_API_KEY=AIzaSyDCC1JLFTVhM5smLy5BTn96dhiOj_gSUWQ
+FIREBASE_AUTH_DOMAIN=intelhealth-mpower.firebaseapp.com
+FIREBASE_PROJECT_ID=intelhealth-mpower
+FIREBASE_STORAGE_BUCKET=intelhealth-mpower.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=971382487208
+FIREBASE_APP_ID=1:971382487208:web:13f83dac2ff14f54bdaa9d
+FIREBASE_SERVICE_ACCOUNT_KEY={ "type": "service_account","project_id": "intelhealth-mpower", "private_key_id": "614ad5624f5a4dd5b5a8027a67dd8d48499a4b94", "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDbdCHuYPTeIMIL\nhhlXvBYlCyJLQR90TKJmR0dpR9oBDkroVuAhs/MKa2jF9mCS0W9DyJNgFqgtSU68\nNyDuM8bzxti/Zd9RMEUJ0nwEI71pPuRdO753RNC5c4vPGHQ+F7UYDUYbJLmuJ6EI\n9/D1MWOSDpcNTA7fCrh6Z1/ymC86bn2lDvX04iuE9kpaLflDgJqGW3nIjJQ5VXrK\nEyV20WrYAOCbIsMqTPNc8F0ksQUYRUUTJ0dIGQH0RpkkujG8ZS6HyQt9Jo1BAJte\nhERQMvCrptM0SDkgKjjbWjL95yyERtUNJBCz78WlfI3ehacrEP8dZ3NmLpQkRDTC\np4Azw5K3AgMBAAECggEAA7Y8prAMJD+wmIpNnm7HfxvnmhdBZXGwY4N8ITs+ZDsu\nKCzkAJ3vE/OKI6MNsh4JwD9BwuPPN2jghI14KJ9Gk7P+0YnzE4f5+vcM8vL5zrBq\nI2uRxqmq0CA0sq2Ktcwn237J+0aNP3VbI3AyKquJsBxAENEDBWHEigl6lXtefSH+\nRlBEum+l8mO3ZNFJpAoEZterQDrBJS5vU5wgx2ol3gDFFbtiFlRHAF26IwAcPmHh\nLVJ06gNhqkA3y+8NvG+llh+ewfkUVSX1jYeASvjOEKYMVEkdTT0dOVDqpZ2gs4QS\nG0N7C0RQm7I8+9FeQfSPxYgJku6N511gwXn9Coed1QKBgQD38tMALq8VH7sjj6Qg\nPxnRntKxtSqBFskrVm0s5fxfsj0nTVCDlmMsga4tZsWDegjmhTB7ZHYWWb7TZxSX\n+lljRJ7SYr2U6b4M2Z4o1CVO9LF3b9I5cIhXduftCAReM3HQZXGY9Oq48oAGm0Sr\n+I32aPVbgqcC8VMmtwv78uHI6wKBgQDilG7B/uytTsq7gqxiHyeFJ7hVjTRC9HTe\nKfzyUghc+1rbBW2ZXY61gK0cwITLwJ4o7ePN+YH4RmD2jNZKUOlDSkbFnDzKGYfo\nluZhHrrUiGW3mwUMMN09yRreuLz5POiBK+RHxLXdeAQboWWvBufJwGIiSc68Sdr4\n1QxxivpqZQKBgQC6g8Qrh/KWblckygHJbA4s/E879K7zikNrwUjBFIRDLF4KOYOO\naMtTiH2Qk5WScHNPjPNKbujRqVL9zbXVGTKylMTwN+yqnyYinnT1+5fRDAqPcONv\n5/H38W9Hg9ddUU+VVyobyGjlFS4vSg9fWcrYiF3BJ8ggU46cOefe7/beXwKBgEpW\npNglSYW6+iz3PJOc4RyA4au//kuRZN6XLBRc8b2AAlkluMW+ulm2dBWg3HD1K28G\nTd2AZTIN9TYvEwei8EVRk1K2ZgNwyPR4vfFTYbzlW2oYBFnxlkT1PEmilu23HBl1\nSxp44apd/AsMsw3v2BCLfCb/zEJegOdvDvwZuvs5AoGAOhRs8gRYXtOeRe6yZulA\nD3S+fkUIO5e7dTCVv4f5UI0uqCfvqZ3QT9F6H2EFKrs+2lrT/14Go8v77T4nj2Zw\nhw2gl2mxgDXdZny534o3xmY7iQ2fpABG/sicIvzGvoOG+u3ZwuuihoRGi1fznP37\n4UZEI5BocmNqPZhgRjtFhnU=\n-----END PRIVATE KEY-----\n", "client_email": "firebase-adminsdk-f8igt@intelhealth-mpower.iam.gserviceaccount.com", "client_id": "110202445555012147496", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-f8igt%40intelhealth-mpower.iam.gserviceaccount.com", "universe_domain": "googleapis.com"}
+AWS_ACCESS_KEY_ID=AKIAQ3EGPQQFSPIEBBQS
+AWS_SECRET_ACCESS_KEY=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
+AWS_REGION=ap-south-1
+AWS_BUCKET_NAME=intelehealth-dev
+AWS_URL=https://s3.amazonaws.com/intelehealth-dev/
+
+
+ALLOWED_ORIGINS=["http://localhost:4200","https://intelehealth-prod-master-new.mpower-social.com","http://localhost:3030","https://intelehealth-prod-master-new.mpower-social.com:3030","http://127.0.0.1:3030"]
+
+7. Install dependencies
+    npm install
+8. start the server
+    pm2 start bin/www --name portal
+    pm2 save
+9. start web-rtc:
+    cd ../web-rtc/
+    nano .env
+    insert this:
+PORT=3000
+SECRET=secret
+API_KEY=devkey
+SSL=true  # make this true and pass cert and key path below to enable ssl and making site https
+SSL_CERT_PATH=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/fullchain.pem
+SSL_KEY_PATH=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/privkey.pem
+LIVEHOST=127.0.0.1
+TCP=7881
+UDP=7882
+MYSQL_DIALECT=mysql
+MYSQL_HOST="127.0.0.1"
+MYSQL_PORT= 3306
+MYSQL_USERNAME="root"
+MYSQL_PASS="openmrs"
+MYSQL_DB=mindmap_server
+MYSQL_OPENMRS_DB=openmrs
+
+10. Install dependencies
+    npm install
+11. start the server
+    pm2 start src/index.ts --name=webrtc-ms
+    pm2 save
+12. Start configuration-microservice
+    cd ../configuration-microservice/
+    nano .env
+    insert this:
+PORT=4004
+NODE_ENV=production
+SSL=true  # make this true and pass cert and key path below to enable ssl and making site https
+JWT_SECRET=$2y$10$HFslQil9wxov/iKuUq6RZesfxlRyokFJSWt4knhWF/U1oiWEfRjA2
+DOMAIN=intelehealth-prod-master-new.mpower-social.com
+OPENMRS_USERNAME=admin
+OPENMRS_PASS=apple@1Mango
+DOCTOR_ROLES=["a5df6aa5-d6e5-4b56-b0e7-315ee0899f97"]
+NURSE_ROLES=["f4c6152c-50cf-4055-b842-557baa0c5e30","8d94f280-c2cc-11de-8d13-0010c6dffd0f"]
+EMAIL_PROVIDER_ATTRIBUTE_TYPE=226c0494-d67e-47b4-b7ec-b368064844bd
+PHONE_NUMBER_PROVIDER_ATTRIBUTE_TYPE=e3a7e03a-5fd0-4e6c-b2e3-938adb3bbb37
+COUNTRY_CODE_PROVIDER_ATTRIBUTE_TYPE=2d4d8e6d-21c4-4710-a3ad-4daf5c0dfbbb
+SSL_PRIVATE_KEY=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/privkey.pem
+SSL_CERT=/etc/letsencrypt/live/intelehealth-prod-master-new.mpower-social.com/fullchain.pem
+ALLOWED_ORIGINS=["http://localhost:4200","http://localhost:3000","http://localhost:3030","http://127.0.0.1:3030","http://localhost:4200","https://intelehealth-prod-master-new.mpower-social.com","http://localhost:3030","https://intelehealth-prod-master-new.mpower-social.com:3030","http://127.0.0.1:3030"]
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_DIALECT=mysql
+MYSQL_USERNAME=root
+MYSQL_PASS=openmrs
+MYSQL_DB=mindmap_server
+MYSQL_OPENMRS_DB=openmrs
+
+
+13. Install dependencies
+    npm install
+14. start the server
+    pm2 start npm --name configuration-microservice -- run start
+    pm2 save
+
+
+Setup Python app:
+1. Install python if not installed:
+    sudo apt-get install python3
+    sudo apt-get install python3-dev
+    sudo apt-get install python3-venv
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+2. update database info in index
+    nano index.py
+    find: mysql.connector.connect(host='localhost',
+                                         database='openmrs',
+                                         user='root',
+                                         password='openmrs')
+
+    update according to your database info
+3. start the server
+    python index.py
+
+
+Update of OpenMRS version:
+1. Stop tomcat:
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download refapp version 2.8.1
+3. unzip it
+
+4. update module:
+    cd ~/.OpenMRS/modules
+5. delete all module except webservices.rest-2.31.0.omod 
+6. copy all module from [download_path]/referenceapplication-package-2.8.1 except webservices.rest-*.omod
+    cp [download_path]/referenceapplication-package-2.8.1/modules/* ./
+7. start tomcat
+    ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+next upgrade the openmrs version to 2.2
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.2
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. need to update database url in openmrs-runtime.properties file
+    nano ~/.OpenMRS/openmrs-runtime.properties
+    update the database url according to your database info
+    update connection.url property if it is not same as below:
+    
+    connection.url=jdbc\:mysql\://192.168.19.122\:3306/openmrs?autoReconnect\=true&sessionVariables\=default_storage_engine\=InnoDB&useUnicode\=true&characterEncoding\=UTF-8
+    
+    To: add (useSSL=false&) after :3306/openmrs?
+
+    connection.url=jdbc\:mysql\://192.168.19.122\:3306/openmrs?useSSL=false&autoReconnect\=true&sessionVariables\=default_storage_engine\=InnoDB&useUnicode\=true&characterEncoding\=UTF-8
+
+6. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+upgrade refapp version 2.9.0
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download refapp version 2.9.0
+3. unzip it
+4. update module:
+    cd ~/.OpenMRS/modules
+5. delete all module except webservices.rest-2.31.0.omod 
+6. copy all module from [download_path]/referenceapplication-package-2.9.0 except webservices.rest-*.omod
+    cp [download_path]/referenceapplication-package-2.9.0/modules/* ./
+7. start tomcat
+    ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+upgrade openmrs version 2.2 to 2.3
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.3
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+Database will be updated but get error to start because of backdated modules. update module of refapp 2.10
+
+6. shutdown tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+7. update modules of refapp 2.10
+    cd ~/.OpenMRS/modules
+    delete all module except webservices.rest-2.31.0.omod 
+    copy all module from [download_path]/referenceapplication-package-2.10/modules except webservices.rest-*.omod
+    cp [download_path]/referenceapplication-package-2.10/modules/* ./
+8. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+
+update openmrs version 2.3 to 2.3.1
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.3.1
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+update openmrs to 2.3.2
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.3.2
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+update refapp to 2.11.0
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download refapp version 2.11.0
+3. unzip it
+4. update module:
+    cd ~/.OpenMRS/modules
+5. delete all module except webservices.rest-2.31.0.omod 
+6. copy all module from [download_path]/referenceapplication-package-2.11.0/modules except webservices.rest-*.omod
+    cp [download_path]/referenceapplication-package-2.11.0/modules/* ./
+7. start tomcat
+    ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+
+update openmrs to 2.3.3 
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.3.3
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+will get error for fhir2 module. need to delete fhir2 module.
+6. delete fhir2 module
+    cd /opt/tomcat8/bin
+    sudo ./shutdown.sh
+    cd ~/.OpenMRS/modules
+    rm fhir2-*.omod
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+update openmrs to 2.4
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.4
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+update refapp to 2.12.0
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download refapp version 2.12.0
+3. unzip it
+4. update module:
+    cd ~/.OpenMRS/modules
+5. delete all module except webservices.rest-2.31.0.omod 
+6. copy all module from [download_path]/referenceapplication-package-2.12.0/modules except webservices.rest-*.omod
+    cp [download_path]/referenceapplication-package-2.12.0/modules/* ./
+7. start tomcat
+    ./startup.sh
+
+will give a error for fhir2 module. like this:
+openmrs.liquibasechangelog where MD5SUM='8:3a65e41b9238d0feab36ef2e7c0022d3' to 8:a338427d100eb59b39015c6773b85dba
+openmrs.liquibasechangelog where MD5SUM='8:719ab651e116abf26ad2d0aa3e0ff14e' to 8:f2e2cb0a28fe3b6a94a95e49661a5bb7
+
+8. shutdown tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+9. update database:
+
+UPDATE openmrs.liquibasechangelog
+SET MD5SUM = '8:a338427d100eb59b39015c6773b85dba'
+WHERE MD5SUM = '8:3a65e41b9238d0feab36ef2e7c0022d3';
+
+
+UPDATE openmrs.liquibasechangelog
+SET MD5SUM = '8:f2e2cb0a28fe3b6a94a95e49661a5bb7'
+WHERE MD5SUM = '8:f2e2cb0a28fe3b6a94a95e49661a5bb7';
+
+10. start tomcat
+    cd /opt/tomcat8/bin/
+    ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+
+update openmrs to 2.4.2
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.4.2
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+
+update openmrs to 2.4.3
+
+1. Stop tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+2. download openmrs.war 2.4.3
+3. take backup of database and openmrs.war file if needed
+4. replace /opt/tomcat8/webapps/openmrs.war file with new openmrs.war file
+    rm /opt/tomcat8/webapps/openmrs.war
+    cp [download_path]/openmrs.war /opt/tomcat8/webapps/
+5. start tomcat
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+
+if run successfully then tomcat will be up and running on port 8080
+6. update fhir2 module from ui.
+    Login to openmrs as admin
+    Go to Manage Modules
+    Click Update button for fhir2 module
+    update to fhir2-2.0.0.omod
+7. restart tomcat if required.
+    cd /opt/tomcat8/bin/
+    sudo ./shutdown.sh
+    cd /opt/tomcat8/bin/
+    sudo ./startup.sh
+if run successfully then tomcat will be up and running on port 8080
+

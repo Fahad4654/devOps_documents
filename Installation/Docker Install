@@ -26,7 +26,7 @@ _______________
 			for more: https://docs.docker.com/engine/install/ubuntu/
 			
 			
-11.  sudoless docke:
+11.  sudoless docker:
 	
 	sudo usermod -aG docker $USER
 
