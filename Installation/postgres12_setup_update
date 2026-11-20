@@ -39,7 +39,7 @@ ____________________________________________________________________
 1. sudo su postgres
 
 2. postgres user and password create:  
-	psql -d template1 -c "CREATE USER opensrp_admin WITH PASSWORD 'admin';"
+	psql -d template1 -c "CREATE USER kobo WITH PASSWORD 'DB@mPower@786';"
 
 3. exit;
 
@@ -53,7 +53,7 @@ detail: opensrp_admin for postgres user and
 6. create database opensrp;
 7. \q
 
-8. psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE opensrp to opensrp_admin;"
+8. psql -d template1 -c "GRANT ALL PRIVILEGES ON DATABASE road_safety_db to kobo;"
 
 9. psql -c "CREATE EXTENSION IF NOT EXISTS postgis;" -d <DBname>
 10. psql -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" -d <DBname>
